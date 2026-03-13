@@ -1,13 +1,19 @@
-import type { AuthUser, RegisterInput } from "./types"
+import type { AuthUser, RegisterInput, RegisterResponse } from "./types"
 
 export async function registerUser(data: RegisterInput): Promise<AuthUser> {
-  void data
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
 
-  // TODO:
-  // 1. Send POST request to /api/auth/register
-  // 2. Parse JSON response
-  // 3. Throw Error if response is not ok
-  // 4. Return created user
+  const result: RegisterResponse | { error: string } = await response.json()
 
-  throw new Error("Not implemented")
+  if ("error" in result) {
+    throw new Error(result.error)
+  }
+
+  return result.user
 }

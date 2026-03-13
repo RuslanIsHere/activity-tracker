@@ -1,13 +1,47 @@
+import { validateRegisterInput } from "@/features/auth/validation"
+import { prisma } from "@/lib/prisma"
+import bcrypt from "bcryptjs"
+
 export async function POST(request: Request) {
-  void request
+  try {
+    const body = await request.json();
+    const validationResult = validateRegisterInput(body);
 
-  // TODO:
-  // 1. Read JSON body from request
-  // 2. Validate incoming data
-  // 3. Check if user with this email already exists
-  // 4. Hash password
-  // 5. Create user in database
-  // 6. Return created user or an error response
+    if (!validationResult.success) {
+      return Response.json({ error: validationResult.error }, { status: 400 });
+    }
 
-  throw new Error("Not implemented")
+    const { email, name, password } = validationResult.data
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    })
+
+    if (existingUser) {
+      return Response.json(
+        { error: "User with this email already exists" },
+        { status: 409 }
+      )
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    })
+
+    return Response.json({ user }, { status: 201 });
+  } catch {
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

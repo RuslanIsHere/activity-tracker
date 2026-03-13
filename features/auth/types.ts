@@ -25,6 +25,16 @@ export type ValidationResult<T> =
       error: string
     }
 
+export type AuthErrorResponse = {
+  error: string
+}
+
+export type RegisterResponse = {
+  user: AuthUser
+}
+
+export type RegisterApiResponse = RegisterResponse | AuthErrorResponse
+
 // Tip:
 // Add more auth-related types here only when they belong specifically
 // to the auth feature: form state, API payloads, auth user shape.
