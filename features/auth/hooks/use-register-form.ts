@@ -4,12 +4,17 @@ import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { registerUser } from "../api"
 import { validateRegisterInput } from "../validation"
-import { RegisterInput } from "../types"
+import type { RegisterInput } from "../types"
 
-const initialValues: RegisterInput = {
+type RegisterFormValues = RegisterInput & {
+  confirmPassword: string
+}
+
+const initialValues: RegisterFormValues = {
   email: "",
   name: "",
   password: "",
+  confirmPassword: "",
 }
 
 export function useRegisterForm() {
@@ -30,7 +35,18 @@ export function useRegisterForm() {
     event.preventDefault()
     setError("")
 
-    const validationResult = validateRegisterInput(values)
+    if (values.password !== values.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+
+    const registerData: RegisterInput = {
+      email: values.email,
+      name: values.name,
+      password: values.password,
+    }
+
+    const validationResult = validateRegisterInput(registerData)
 
     if (!validationResult.success) {
       setError(validationResult.error)
