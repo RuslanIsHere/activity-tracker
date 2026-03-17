@@ -3,7 +3,10 @@
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { registerUser } from "../api"
-import { validateRegisterInput } from "../validation"
+import { doPasswordsMatch,
+  getPasswordChecks,
+  isValidEmail,
+  validateRegisterInput } from "../validation"
 import type { RegisterInput } from "../types"
 
 type RegisterFormValues = RegisterInput & {
@@ -22,6 +25,19 @@ export function useRegisterForm() {
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const isEmailValid = isValidEmail(values.email)
+  const passwordChecks = getPasswordChecks(values.password)
+  const isPasswordConfirmed = doPasswordsMatch(values.password, values.confirmPassword)
+
+  const validationState = {
+    isEmailValid,
+    passwordChecks,
+    isPasswordConfirmed,
+    showEmailStatus: values.email.trim() !== "",
+    showPasswordStatus: values.password !== "",
+    showConfirmPasswordStatus: values.confirmPassword !== "",
+  }
+
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
 
@@ -35,7 +51,7 @@ export function useRegisterForm() {
     event.preventDefault()
     setError("")
 
-    if (values.password !== values.confirmPassword) {
+    if (!isPasswordConfirmed) {
       setError("Passwords do not match")
       return
     }
@@ -71,5 +87,6 @@ export function useRegisterForm() {
     isSubmitting,
     handleChange,
     handleSubmit,
+    validationState,
   }
 }
