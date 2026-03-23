@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
-    DropdownMenuContent, DropdownMenuGroup,
+    DropdownMenuContent,
+    DropdownMenuLabel,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
@@ -9,12 +10,13 @@ import {
 import {
     CreditCardIcon,
     LogOutIcon,
-    SettingsIcon,
+    MailIcon,
+    CircleUserRoundIcon,
     UserIcon,
 } from "lucide-react"
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import Link from "next/link"
-import { auth } from "@/lib/auth"
+import { auth, signOut } from "@/lib/auth"
 
 export default async function Header() {
     const session = await auth()
@@ -29,36 +31,50 @@ export default async function Header() {
                 {user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="rounded-full">
-                                <Avatar>
-                                    <AvatarFallback>
-                                        {user?.name?.charAt(0).toUpperCase()}
+                            <Button variant="outline" className="h-10 gap-2 rounded-full px-3">
+                                <Avatar size="sm">
+                                    <AvatarFallback className="bg-primary/10 text-primary">
+                                        {user?.name?.charAt(0).toUpperCase() ?? "U"}
                                     </AvatarFallback>
                                 </Avatar>
+                                <span className="max-w-24 truncate text-sm">
+                                    {user.name ?? "User"}
+                                </span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-32">
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem className="flex items-center hover:bg-muted">
-                                    <UserIcon/>Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="flex items-center hover:bg-muted">
-                                    <SettingsIcon/>Settings
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
+                        <DropdownMenuContent className="w-56">
+                            <DropdownMenuLabel className="pb-1 text-xs uppercase tracking-wide text-muted-foreground">
+                                Account
+                            </DropdownMenuLabel>
+                            <DropdownMenuItem className="flex items-center hover:bg-muted">
+                                <CircleUserRoundIcon />
+                                <span className="truncate">{user.name ?? "User"}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="flex items-center hover:bg-muted">
+                                <MailIcon />
+                                <span className="truncate">{user.email}</span>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem variant="destructive" className="flex items-center">
-                                    <LogOutIcon />
-                                    Log out
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
+                            <form
+                                action={async () => {
+                                    "use server"
+                                    await signOut({ redirectTo: "/" })
+                                }}
+                            >
+                                <button className="focus:bg-destructive/10 data-[variant=destructive]:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive relative flex w-full cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none">
+                                    <LogOutIcon className="size-4 text-destructive" />
+                                    <span className="text-destructive">Log out</span>
+                                </button>
+                            </form>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline">Authorisation</Button>
+                            <Button variant="outline" className="h-10 gap-2 rounded-full px-3">
+                                <UserIcon className="size-4" />
+                                <span className="text-sm">Authorisation</span>
+                            </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                             <DropdownMenuItem>
