@@ -1,7 +1,6 @@
 "use client"
 
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 
@@ -14,8 +13,6 @@ export function useLoginForm() {
   const [values, setValues] = useState(initialValues)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false) 
-  const router = useRouter()
-
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target
@@ -56,9 +53,8 @@ export function useLoginForm() {
         setError(result?.error || "Invalid email or password")
         return
       }
-      if (result.ok) {  
-        router.push("/")
-      }
+
+      window.location.href = "/"
     } catch (error) {
       setError(error instanceof Error ? error.message : "Login failed")
     } finally {

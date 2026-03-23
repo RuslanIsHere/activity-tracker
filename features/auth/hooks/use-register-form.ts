@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import type { ChangeEvent, FormEvent } from "react"
 import { registerUser } from "../api"
 import { doPasswordsMatch,
@@ -21,8 +22,10 @@ const initialValues: RegisterFormValues = {
 }
 
 export function useRegisterForm() {
+  const router = useRouter()
   const [values, setValues] = useState(initialValues)
   const [error, setError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEmailValid = isValidEmail(values.email)
@@ -50,6 +53,7 @@ export function useRegisterForm() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError("")
+    setSuccessMessage("")
 
     if (!isPasswordConfirmed) {
       setError("Passwords do not match")
@@ -74,6 +78,10 @@ export function useRegisterForm() {
 
       await registerUser(validationResult.data)
       setValues(initialValues)
+      setSuccessMessage("Account created successfully. Redirecting to login...")
+      setTimeout(() => {
+        router.push("/login")
+      }, 1200)
     } catch (error) {
       setError(error instanceof Error ? error.message : "Registration failed")
     } finally {
@@ -84,6 +92,7 @@ export function useRegisterForm() {
   return {
     values,
     error,
+    successMessage,
     isSubmitting,
     handleChange,
     handleSubmit,

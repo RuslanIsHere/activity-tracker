@@ -19,7 +19,7 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const { values, error, isSubmitting, handleChange, handleSubmit, validationState } =
+  const { values, error, successMessage, isSubmitting, handleChange, handleSubmit, validationState } =
     useRegisterForm()
 
   const isPasswordValid =
@@ -163,6 +163,12 @@ export default function RegisterForm() {
                 </Button>
               </div>
             </Field>
+
+            {successMessage ? (
+              <p className="rounded-md border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-700">
+                {successMessage}
+              </p>
+            ) : null}
 
             {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
