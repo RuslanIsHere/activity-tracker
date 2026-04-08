@@ -6,15 +6,22 @@ import interactionPlugin from "@fullcalendar/interaction"
 
 export default function Calendar() {
   return (
-    <FullCalendar
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridMonth"
-      height="auto"
-      headerToolbar={{
-        left: "prev,next today",
-        center: "title",
-        right: "",
-      }}
-    />
+    <div className="rounded-3xl border bg-card p-4 shadow-sm sm:p-5">
+      <div className="activity-calendar">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          height="auto"
+          buttonText={{
+            today: "Today",
+          }}
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "",
+          }}
+        />
+      </div>
+    </div>
   )
 }
