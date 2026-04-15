@@ -194,6 +194,15 @@
     padding: 0.35rem;
   }
 
+  .activity-calendar .fc-daygrid-day {
+    cursor: pointer;
+  }
+
+  .activity-calendar .activity-calendar-selected-day {
+    background: color-mix(in oklab, var(--primary) 12%, transparent);
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
+
   .activity-calendar .fc-day-today {
     background: color-mix(in oklab, var(--primary) 8%, transparent) !important;
   }

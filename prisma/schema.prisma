@@ -18,16 +18,30 @@ model User {
   name       String?
   password   String
   activities Activity[]
+  categories Category[]
   createdAt  DateTime   @default(now())
 }
 
 model Activity {
-  id        String   @id @default(cuid())
-  title     String
-  category  String?
-  notes     String?
-  date      DateTime
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  title      String
+  notes      String?
+  date       DateTime
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+}
+
+model Category {
+  id         String     @id @default(cuid())
+  name       String
+  color      String?
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+  activities Activity[]
+  createdAt  DateTime   @default(now())
+
+  @@unique([userId, name])
 }

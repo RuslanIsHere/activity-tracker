@@ -1,4 +1,4 @@
-import Calendar from "@/features/activities/components/calendar"
+import ActivitiesCalendar from "@/features/activities/components/activities-calendar"
 
 import DashboardStats from "./dashboard-stats"
 
@@ -29,12 +29,11 @@ export default function DashboardHome({ userName }: DashboardHomeProps) {
           <div className="mb-4 space-y-1">
             <h2 className="text-xl font-semibold tracking-tight">Calendar</h2>
             <p className="text-sm text-muted-foreground">
-              This is the first calendar shell. Daily details and activity actions
-              will be added next.
+              Pick a day and add what you worked on.
             </p>
           </div>
 
-          <Calendar />
+          <ActivitiesCalendar />
         </section>
       </div>
     </main>
