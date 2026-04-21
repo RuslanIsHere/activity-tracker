@@ -1,8 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-import { getActivities } from "@/features/activities/api"
+import {
+  deleteActivity,
+  getActivities,
+} from "@/features/activities/api"
 import type { ActivityResponse } from "@/features/activities/types"
 import { getCategories } from "@/features/categories/api"
 import type { CategoryResponse } from "@/features/categories/types"
@@ -19,10 +22,41 @@ function getTodayDate() {
 }
 
 export default function ActivitiesCalendar() {
+  const calendarPanelRef = useRef<HTMLDivElement | null>(null)
   const [selectedDate, setSelectedDate] = useState(getTodayDate)
   const [activities, setActivities] = useState<ActivityResponse[]>([])
   const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [editingActivity, setEditingActivity] = useState<ActivityResponse | null>(
+    null
+  )
+  const [calendarPanelHeight, setCalendarPanelHeight] = useState<number>()
   const [loadMessage, setLoadMessage] = useState("")
+
+  useEffect(() => {
+    const element = calendarPanelRef.current
+
+    if (!element) {
+      return
+    }
+
+    function updateCalendarPanelHeight() {
+      setCalendarPanelHeight(element?.offsetHeight)
+    }
+
+    updateCalendarPanelHeight()
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCalendarPanelHeight()
+    })
+
+    resizeObserver.observe(element)
+    window.addEventListener("resize", updateCalendarPanelHeight)
+
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener("resize", updateCalendarPanelHeight)
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -67,6 +101,54 @@ export default function ActivitiesCalendar() {
 
   function handleActivityCreated(activity: ActivityResponse) {
     setActivities((currentActivities) => [...currentActivities, activity])
+  }
+
+  function handleActivityUpdated(updatedActivity: ActivityResponse) {
+    setActivities((currentActivities) =>
+      currentActivities.map((activity) =>
+        activity.id === updatedActivity.id ? updatedActivity : activity
+      )
+    )
+    setSelectedDate(updatedActivity.date.slice(0, 10))
+    setEditingActivity(null)
+  }
+
+  async function handleActivityDeleted(activity: ActivityResponse) {
+    const confirmed = window.confirm(
+      `Delete "${activity.title}"? This cannot be undone.`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteActivity(activity.id)
+      setActivities((currentActivities) =>
+        currentActivities.filter(
+          (currentActivity) => currentActivity.id !== activity.id
+        )
+      )
+      setLoadMessage("")
+      setEditingActivity((currentEditingActivity) =>
+        currentEditingActivity?.id === activity.id ? null : currentEditingActivity
+      )
+    } catch (error) {
+      setLoadMessage(
+        error instanceof Error ? error.message : "Could not delete activity."
+      )
+    }
+  }
+
+  function handleEditActivity(activity: ActivityResponse) {
+    setEditingActivity(activity)
+    setSelectedDate(activity.date.slice(0, 10))
+    setLoadMessage("")
+  }
+
+  function handleCancelEdit() {
+    setEditingActivity(null)
+    setLoadMessage("")
   }
 
   function handleCategoryCreated(category: CategoryResponse) {
@@ -118,13 +200,21 @@ export default function ActivitiesCalendar() {
       ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <Calendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+        <div ref={calendarPanelRef}>
+          <Calendar selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+        </div>
         <ActivityCreatePanel
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           activities={selectedDayActivities}
           categories={categories}
+          panelHeight={calendarPanelHeight}
+          editingActivity={editingActivity}
           onActivityCreated={handleActivityCreated}
+          onActivityUpdated={handleActivityUpdated}
+          onEditActivity={handleEditActivity}
+          onDeleteActivity={handleActivityDeleted}
+          onCancelEdit={handleCancelEdit}
           onCategoryCreated={handleCategoryCreated}
           onCategoryUpdated={handleCategoryUpdated}
           onCategoryDeleted={handleCategoryDeleted}

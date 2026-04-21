@@ -10,7 +10,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { createActivity } from "@/features/activities/api"
+import {
+  createActivity,
+  updateActivity,
+} from "@/features/activities/api"
 import type { ActivityResponse } from "@/features/activities/types"
 import CategorySelect from "@/features/categories/components/category-select"
 import type { CategoryResponse } from "@/features/categories/types"
@@ -20,6 +23,9 @@ type ActivityFormProps = {
   onDateChange: (date: string) => void
   categories: CategoryResponse[]
   onActivityCreated: (activity: ActivityResponse) => void
+  onActivityUpdated: (activity: ActivityResponse) => void
+  editingActivity?: ActivityResponse | null
+  onCancelEdit: () => void
 }
 
 export default function ActivityForm({
@@ -27,6 +33,9 @@ export default function ActivityForm({
   onDateChange,
   categories,
   onActivityCreated,
+  onActivityUpdated,
+  editingActivity,
+  onCancelEdit,
 }: ActivityFormProps) {
   const [title, setTitle] = useState("")
   const [categoryId, setCategoryId] = useState<string | undefined>()
@@ -43,6 +52,22 @@ export default function ActivityForm({
     }
   }, [categories, categoryId])
 
+  useEffect(() => {
+    if (!editingActivity) {
+      setTitle("")
+      setCategoryId(undefined)
+      setNotes("")
+      setStatusMessage("")
+      return
+    }
+
+    setTitle(editingActivity.title)
+    setCategoryId(editingActivity.categoryId ?? undefined)
+    setNotes(editingActivity.notes ?? "")
+    setStatusMessage("")
+    onDateChange(editingActivity.date.slice(0, 10))
+  }, [editingActivity, onDateChange])
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
@@ -55,6 +80,19 @@ export default function ActivityForm({
     setStatusMessage("")
 
     try {
+      if (editingActivity) {
+        const result = await updateActivity(editingActivity.id, {
+          title,
+          categoryId,
+          notes,
+          date: selectedDate,
+        })
+
+        setStatusMessage("Activity updated.")
+        onActivityUpdated(result.activity)
+        return
+      }
+
       const result = await createActivity({
         title,
         categoryId,
@@ -124,9 +162,28 @@ export default function ActivityForm({
       </FieldGroup>
 
       <div className="space-y-3">
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? "Adding..." : "Add activity"}
-        </Button>
+        <div className="flex gap-2">
+          <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            {isSubmitting
+              ? editingActivity
+                ? "Saving..."
+                : "Adding..."
+              : editingActivity
+                ? "Save changes"
+                : "Add activity"}
+          </Button>
+
+          {editingActivity ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancelEdit}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+          ) : null}
+        </div>
 
         {statusMessage ? (
           <p className="text-sm text-muted-foreground">{statusMessage}</p>
