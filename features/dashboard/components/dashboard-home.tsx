@@ -6,7 +6,7 @@ type DashboardHomeProps = {
   userName?: string | null
 }
 
-export default function DashboardHome({ userName }: DashboardHomeProps) {
+export default async function DashboardHome({ userName }: DashboardHomeProps) {
   return (
     <main className="px-6 py-10 sm:px-8 lg:px-12">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">

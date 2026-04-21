@@ -1,5 +1,6 @@
 "use client"
 
+import type { CSSProperties } from "react"
 import { Button } from "@/components/ui/button"
 import type { ActivityResponse } from "@/features/activities/types"
 import CategoryManager from "@/features/categories/components/category-manager"
@@ -13,7 +14,13 @@ type ActivityCreatePanelProps = {
   onDateChange: (date: string) => void
   activities: ActivityResponse[]
   categories: CategoryResponse[]
+  panelHeight?: number
+  editingActivity: ActivityResponse | null
   onActivityCreated: (activity: ActivityResponse) => void
+  onActivityUpdated: (activity: ActivityResponse) => void
+  onEditActivity: (activity: ActivityResponse) => void
+  onDeleteActivity: (activity: ActivityResponse) => void
+  onCancelEdit: () => void
   onCategoryCreated: (category: CategoryResponse) => void
   onCategoryUpdated: (category: CategoryResponse) => void
   onCategoryDeleted: (categoryId: string) => void
@@ -30,7 +37,13 @@ export default function ActivityCreatePanel({
   onDateChange,
   activities,
   categories,
+  panelHeight,
+  editingActivity,
   onActivityCreated,
+  onActivityUpdated,
+  onEditActivity,
+  onDeleteActivity,
+  onCancelEdit,
   onCategoryCreated,
   onCategoryUpdated,
   onCategoryDeleted,
@@ -38,7 +51,16 @@ export default function ActivityCreatePanel({
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false)
 
   return (
-    <aside className="rounded-lg border bg-card p-4 shadow-sm sm:p-5">
+    <aside
+      className="rounded-lg border bg-card p-4 shadow-sm sm:p-5 lg:max-h-[var(--calendar-panel-height)] lg:overflow-y-auto"
+      style={
+        panelHeight
+          ? ({
+              "--calendar-panel-height": `${panelHeight}px`,
+            } as CSSProperties)
+          : undefined
+      }
+    >
       <div className="mb-5 space-y-1">
         <p className="text-sm font-medium text-muted-foreground">
           Selected day
@@ -51,22 +73,43 @@ export default function ActivityCreatePanel({
       <div className="space-y-6">
         <section className="space-y-3">
           <h4 className="text-sm font-semibold">Activities</h4>
-          <ActivityList activities={activities} />
+          <div>
+            <ActivityList
+              activities={activities}
+              editingActivityId={editingActivity?.id ?? null}
+              onEditActivity={onEditActivity}
+              onDeleteActivity={onDeleteActivity}
+            />
+          </div>
         </section>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h4 className="text-sm font-semibold">Add activity</h4>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setIsCategoryManagerOpen((currentValue) => !currentValue)
-              }
-            >
-              Manage categories
-            </Button>
+            <h4 className="text-sm font-semibold">
+              {editingActivity ? "Edit activity" : "Add activity"}
+            </h4>
+            <div className="flex items-center gap-2">
+              {editingActivity ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onCancelEdit}
+                >
+                  Add new
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setIsCategoryManagerOpen((currentValue) => !currentValue)
+                }
+              >
+                Manage categories
+              </Button>
+            </div>
           </div>
 
           {isCategoryManagerOpen ? (
@@ -83,6 +126,9 @@ export default function ActivityCreatePanel({
             onDateChange={onDateChange}
             categories={categories}
             onActivityCreated={onActivityCreated}
+            onActivityUpdated={onActivityUpdated}
+            editingActivity={editingActivity}
+            onCancelEdit={onCancelEdit}
           />
         </section>
       </div>
