@@ -1,41 +1,13 @@
 import { validateActivityInput } from "@/features/activities/validation"
-import { auth } from "@/lib/auth"
+import { parseStoredActivityDate } from "@/features/activities/lib/date"
+import { serializeActivity } from "@/features/activities/lib/serializers"
+import { getCurrentUserId } from "@/lib/current-user"
 import { prisma } from "@/lib/prisma"
 
 type ActivityRouteContext = {
   params: Promise<{
     activityId: string
   }>
-}
-
-function serializeActivity(activity: {
-  id: string
-  title: string
-  categoryId: string | null
-  category: { id: string; name: string; color: string | null } | null
-  notes: string | null
-  date: Date
-}) {
-  return {
-    ...activity,
-    date: activity.date.toISOString(),
-  }
-}
-
-async function getCurrentUserId() {
-  const session = await auth()
-  const userEmail = session?.user?.email
-
-  if (!userEmail) {
-    return null
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: userEmail },
-    select: { id: true },
-  })
-
-  return user?.id ?? null
 }
 
 export async function PATCH(request: Request, context: ActivityRouteContext) {
@@ -91,7 +63,7 @@ export async function PATCH(request: Request, context: ActivityRouteContext) {
         title,
         categoryId: categoryId ?? null,
         notes,
-        date: new Date(`${date}T00:00:00.000Z`),
+        date: parseStoredActivityDate(date),
       },
       select: {
         id: true,

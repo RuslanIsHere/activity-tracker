@@ -1,41 +1,19 @@
 import { validateActivityInput } from "@/features/activities/validation"
-import { auth } from "@/lib/auth"
+import { parseStoredActivityDate } from "@/features/activities/lib/date"
+import { serializeActivity } from "@/features/activities/lib/serializers"
+import { getCurrentUserId } from "@/lib/current-user"
 import { prisma } from "@/lib/prisma"
-
-function serializeActivity(activity: {
-  id: string
-  title: string
-  categoryId: string | null
-  category: { id: string; name: string; color: string | null } | null
-  notes: string | null
-  date: Date
-}) {
-  return {
-    ...activity,
-    date: activity.date.toISOString(),
-  }
-}
 
 export async function GET() {
   try {
-    const session = await auth()
-    const userEmail = session?.user?.email
+    const userId = await getCurrentUserId()
 
-    if (!userEmail) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true },
-    })
-
-    if (!user) {
+    if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const activities = await prisma.activity.findMany({
-      where: { userId: user.id },
+      where: { userId },
       orderBy: [{ date: "asc" }, { createdAt: "asc" }],
       select: {
         id: true,
@@ -63,10 +41,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
-    const userEmail = session?.user?.email
+    const userId = await getCurrentUserId()
 
-    if (!userEmail) {
+    if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -80,22 +57,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true },
-    })
-
-    if (!user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { title, categoryId, notes, date } = validationResult.data
 
     if (categoryId) {
       const category = await prisma.category.findFirst({
         where: {
           id: categoryId,
-          userId: user.id,
+          userId,
         },
         select: { id: true },
       })
@@ -110,8 +78,8 @@ export async function POST(request: Request) {
         title,
         categoryId,
         notes,
-        date: new Date(`${date}T00:00:00.000Z`),
-        userId: user.id,
+        date: parseStoredActivityDate(date),
+        userId,
       },
       select: {
         id: true,

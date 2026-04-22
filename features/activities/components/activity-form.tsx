@@ -107,7 +107,7 @@ export default function ActivityForm({
       onActivityCreated(result.activity)
     } catch (error) {
       setStatusMessage(
-        error instanceof Error ? error.message : "Could not create activity."
+        error instanceof Error ? error.message : "Could not save activity."
       )
     } finally {
       setIsSubmitting(false)

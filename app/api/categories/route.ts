@@ -1,22 +1,6 @@
 import { validateCategoryInput } from "@/features/categories/validation"
-import { auth } from "@/lib/auth"
+import { getCurrentUserId } from "@/lib/current-user"
 import { prisma } from "@/lib/prisma"
-
-async function getCurrentUserId() {
-  const session = await auth()
-  const userEmail = session?.user?.email
-
-  if (!userEmail) {
-    return null
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email: userEmail },
-    select: { id: true },
-  })
-
-  return user?.id ?? null
-}
 
 export async function GET() {
   try {
