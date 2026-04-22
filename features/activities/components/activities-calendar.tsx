@@ -26,6 +26,7 @@ export default function ActivitiesCalendar() {
   const [selectedDate, setSelectedDate] = useState(getTodayDate)
   const [activities, setActivities] = useState<ActivityResponse[]>([])
   const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [isCreatingActivity, setIsCreatingActivity] = useState(false)
   const [editingActivity, setEditingActivity] = useState<ActivityResponse | null>(
     null
   )
@@ -101,6 +102,7 @@ export default function ActivitiesCalendar() {
 
   function handleActivityCreated(activity: ActivityResponse) {
     setActivities((currentActivities) => [...currentActivities, activity])
+    setIsCreatingActivity(false)
   }
 
   function handleActivityUpdated(updatedActivity: ActivityResponse) {
@@ -111,6 +113,7 @@ export default function ActivitiesCalendar() {
     )
     setSelectedDate(updatedActivity.date.slice(0, 10))
     setEditingActivity(null)
+    setIsCreatingActivity(false)
   }
 
   async function handleActivityDeleted(activity: ActivityResponse) {
@@ -142,12 +145,20 @@ export default function ActivitiesCalendar() {
 
   function handleEditActivity(activity: ActivityResponse) {
     setEditingActivity(activity)
+    setIsCreatingActivity(false)
     setSelectedDate(activity.date.slice(0, 10))
+    setLoadMessage("")
+  }
+
+  function handleStartCreate() {
+    setEditingActivity(null)
+    setIsCreatingActivity(true)
     setLoadMessage("")
   }
 
   function handleCancelEdit() {
     setEditingActivity(null)
+    setIsCreatingActivity(false)
     setLoadMessage("")
   }
 
@@ -209,9 +220,11 @@ export default function ActivitiesCalendar() {
           activities={selectedDayActivities}
           categories={categories}
           panelHeight={calendarPanelHeight}
+          isCreatingActivity={isCreatingActivity}
           editingActivity={editingActivity}
           onActivityCreated={handleActivityCreated}
           onActivityUpdated={handleActivityUpdated}
+          onStartCreate={handleStartCreate}
           onEditActivity={handleEditActivity}
           onDeleteActivity={handleActivityDeleted}
           onCancelEdit={handleCancelEdit}

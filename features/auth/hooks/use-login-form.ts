@@ -1,8 +1,10 @@
 "use client"
 
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
+import { isValidEmail } from "@/features/auth/validation"
 
 const initialValues = {
   email: "",
@@ -10,6 +12,7 @@ const initialValues = {
 }
 
 export function useLoginForm() {
+  const router = useRouter()
   const [values, setValues] = useState(initialValues)
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false) 
@@ -31,7 +34,7 @@ export function useLoginForm() {
       setError("Email is required")
       return
     }
-    if (!values.email.includes("@")) {
+    if (!isValidEmail(values.email)) {
       setError("Please enter a valid email")
       return
     }
@@ -54,7 +57,7 @@ export function useLoginForm() {
         return
       }
 
-      window.location.href = "/"
+      router.replace("/")
     } catch (error) {
       setError(error instanceof Error ? error.message : "Login failed")
     } finally {

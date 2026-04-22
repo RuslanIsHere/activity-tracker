@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Activity Tracker
 
-## Getting Started
+Clean MVP for tracking daily activities with a simple calendar flow.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router
+- TypeScript
+- NextAuth credentials auth
+- Prisma
+- PostgreSQL
+- shadcn/ui
+- Tailwind CSS
+
+## What is implemented
+
+- Registration with `POST /api/auth/register`
+- Login with NextAuth credentials
+- Activity calendar with one selected day
+- Create, update, and delete activities
+- Category CRUD for organizing activities
+- Dashboard stats:
+  - current streak
+  - this week
+  - total activities
+
+## Local setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create `.env` with at least:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/activity_tracker"
+AUTH_SECRET="replace-with-a-long-random-secret"
+```
+
+3. Start PostgreSQL with Docker:
+
+```bash
+docker compose up -d
+```
+
+4. Run Prisma migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+5. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/api` keeps route handlers thin and HTTP-focused
+- `features/auth` contains auth forms, hooks, validation, and API helpers
+- `features/activities` contains calendar UI, activity forms, validation, and helpers
+- `features/categories` contains category management and validation
+- `features/dashboard` contains dashboard UI and stats logic
+- `components/ui` stores shared shadcn primitives
+- `components/layout` stores shared layout pieces
 
-## Learn More
+## Current MVP notes
 
-To learn more about Next.js, take a look at the following resources:
+- Activities are stored as day-based records.
+- Dashboard weekly stats count activities from Monday through the current week.
+- Current streak is counted from today backward.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Useful commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev
+npm run lint
+npx prisma migrate dev
+npx prisma studio
+```
