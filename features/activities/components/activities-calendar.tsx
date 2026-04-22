@@ -162,6 +162,54 @@ export default function ActivitiesCalendar() {
     setLoadMessage("")
   }
 
+  function handleActivityUpdated(updatedActivity: ActivityResponse) {
+    setActivities((currentActivities) =>
+      currentActivities.map((activity) =>
+        activity.id === updatedActivity.id ? updatedActivity : activity
+      )
+    )
+    setSelectedDate(updatedActivity.date.slice(0, 10))
+    setEditingActivity(null)
+  }
+
+  async function handleActivityDeleted(activity: ActivityResponse) {
+    const confirmed = window.confirm(
+      `Delete "${activity.title}"? This cannot be undone.`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteActivity(activity.id)
+      setActivities((currentActivities) =>
+        currentActivities.filter(
+          (currentActivity) => currentActivity.id !== activity.id
+        )
+      )
+      setLoadMessage("")
+      setEditingActivity((currentEditingActivity) =>
+        currentEditingActivity?.id === activity.id ? null : currentEditingActivity
+      )
+    } catch (error) {
+      setLoadMessage(
+        error instanceof Error ? error.message : "Could not delete activity."
+      )
+    }
+  }
+
+  function handleEditActivity(activity: ActivityResponse) {
+    setEditingActivity(activity)
+    setSelectedDate(activity.date.slice(0, 10))
+    setLoadMessage("")
+  }
+
+  function handleCancelEdit() {
+    setEditingActivity(null)
+    setLoadMessage("")
+  }
+
   function handleCategoryCreated(category: CategoryResponse) {
     setCategories((currentCategories) =>
       [...currentCategories, category].sort((firstCategory, secondCategory) =>
